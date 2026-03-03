@@ -213,9 +213,9 @@ export const TradingChart: React.FC<TradingChartProps> = ({ symbol, alerts }) =>
 
   return (
     <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden relative p-1.5">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden relative p-1.5 shrink-0">
                 <img 
                     src={`https://assets.coincap.io/assets/icons/${symbol.replace('USDT', '').toLowerCase()}@2x.png`}
                     alt={symbol}
@@ -225,22 +225,22 @@ export const TradingChart: React.FC<TradingChartProps> = ({ symbol, alerts }) =>
                     }}
                 />
             </div>
-            <div>
+            <div className="flex-1">
                 <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
                   {symbol} 
-                  <span className="text-xs font-medium px-2 py-0.5 rounded text-blue-600 bg-blue-50 border border-blue-100">永续</span>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded text-blue-600 bg-blue-50 border border-blue-100 shrink-0">永续</span>
                 </h2>
-                <div className="flex items-center gap-3 mt-1.5">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 shrink-0">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         实时
                     </div>
-                    <div className="flex bg-slate-100 rounded-md p-1 gap-1">
+                    <div className="flex bg-slate-100 rounded-md p-1 gap-1 overflow-x-auto max-w-[200px] md:max-w-none no-scrollbar">
                         {intervals.map((i) => (
                             <button
                                 key={i.value}
                                 onClick={() => setInterval(i.value)}
-                                className={`text-[10px] px-2.5 py-1 rounded font-bold transition-all ${
+                                className={`text-[10px] px-2.5 py-1 rounded font-bold transition-all whitespace-nowrap ${
                                     interval === i.value 
                                     ? 'bg-white text-blue-600 shadow-sm' 
                                     : 'text-slate-400 hover:text-slate-600'
@@ -253,15 +253,17 @@ export const TradingChart: React.FC<TradingChartProps> = ({ symbol, alerts }) =>
                 </div>
             </div>
         </div>
-        <div className="text-right">
-            <div className={`text-3xl font-mono font-bold tracking-tight transition-colors duration-300 ${currentPrice > 0 ? 'text-slate-800' : 'text-slate-300'}`}>
-            ${currentPrice.toFixed(2)}
+        <div className="text-left md:text-right w-full md:w-auto flex justify-between md:block items-center">
+            <div>
+              <div className={`text-3xl font-mono font-bold tracking-tight transition-colors duration-300 ${currentPrice > 0 ? 'text-slate-800' : 'text-slate-300'}`}>
+              ${currentPrice.toFixed(2)}
+              </div>
+              <p className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wide">标记价格</p>
             </div>
-            <p className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wide">标记价格</p>
         </div>
       </div>
       
-      <div className="relative rounded-lg overflow-hidden border border-slate-100 h-[500px]">
+      <div className="relative rounded-lg overflow-hidden border border-slate-100 h-[350px] md:h-[500px]">
           {loading && (
               <div className="absolute inset-0 z-10 bg-white flex flex-col p-8 animate-pulse">
                   {/* Skeleton Header */}
