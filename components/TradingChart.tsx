@@ -137,14 +137,13 @@ export const TradingChart: React.FC<TradingChartProps> = ({ symbol, alerts }) =>
       }
 
       try {
-        // 1. 获取历史K线数据 (Binance Futures API)
-        // 使用 Next.js API 代理请求，解决前端跨域问题 (CORS)
-        const response = await axios.get(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`);
+        // 1. Fetch History Data via Proxy to avoid CORS and Network issues
+        const response = await axios.get(`/api/proxy/klines?symbol=${symbol}&interval=${interval}&limit=500`);
         
-        if (!isMounted) return; // Prevent setting state if unmounted
+        if (!isMounted) return;
 
         const data: CandlestickData[] = response.data.map((d: any[]) => ({
-          time: d[0] / 1000, // timestamp
+          time: d[0] / 1000,
           open: parseFloat(d[1]),
           high: parseFloat(d[2]),
           low: parseFloat(d[3]),
@@ -167,36 +166,42 @@ export const TradingChart: React.FC<TradingChartProps> = ({ symbol, alerts }) =>
 
       if (!isMounted) return;
 
-      // 2. 连接 WebSocket 更新实时数据
+      // 2. Connect WebSocket via Proxy (if possible) or directly
+      // Since browser-side WS still faces network issues, we'll try to use a public node or keep direct connection
+      // For now, let's stick to direct connection but handle errors gracefully
       const wsSymbol = symbol.toLowerCase();
-      ws = new WebSocket(`wss://stream.binance.com:9443/ws/${wsSymbol}@kline_${interval}`);
-      wsRef.current = ws;
+      try {
+          ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_${interval}`);
+          wsRef.current = ws;
 
-      ws.onmessage = (event) => {
-        if (!isMounted) return;
-        const message = JSON.parse(event.data);
-        if (message.e === 'kline') {
-          const k = message.k;
-          const candle: CandlestickData = {
-            time: (k.t / 1000) as any,
-            open: parseFloat(k.o),
-            high: parseFloat(k.h),
-            low: parseFloat(k.l),
-            close: parseFloat(k.c),
+          ws.onmessage = (event) => {
+            if (!isMounted) return;
+            const message = JSON.parse(event.data);
+            if (message.e === 'kline') {
+              const k = message.k;
+              const candle: CandlestickData = {
+                time: (k.t / 1000) as any,
+                open: parseFloat(k.o),
+                high: parseFloat(k.h),
+                low: parseFloat(k.l),
+                close: parseFloat(k.c),
+              };
+
+              if (seriesRef.current) {
+                seriesRef.current.update(candle);
+              }
+              setCurrentPrice(parseFloat(k.c));
+              setLoading(false);
+            }
           };
 
-          if (seriesRef.current) {
-            seriesRef.current.update(candle);
-          }
-          setCurrentPrice(parseFloat(k.c));
-          setLoading(false); // Ensure loading is cleared on first WS message
-        }
-      };
-
-      ws.onerror = (err) => {
-        console.error("WS Error", err);
-        if (isMounted) setLoading(false);
-      };
+          ws.onerror = (err) => {
+            console.error("WS Error", err);
+            // If WS fails, we at least have the historical data shown
+          };
+      } catch (e) {
+          console.error("WS Connection Failed", e);
+      }
     };
 
     fetchDataAndConnectWS();
