@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { symbol, type, targetPrice, tpPrice, slPrice, alertBuffer, notificationType, telegramId, telegramToken, barkKey, notificationEmail } = body;
+    const { symbol, type, targetPrice, tpPrice, slPrice, alertBuffer, notificationType, telegramId, telegramToken, barkKey, notificationEmail, note } = body;
 
     // Update user contact info
     await prisma.user.update({
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
           status: 'ACTIVE',
           alertBuffer: buffer,
           notificationType: notificationType || 'ONCE',
+          note: note,
         });
       }
       if (slPrice) {
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
         status: 'ACTIVE',
         alertBuffer: buffer,
         notificationType: notificationType || 'ONCE',
+        note: note,
       });
     }
 

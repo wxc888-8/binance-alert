@@ -50,6 +50,7 @@ model Alert {
   alertBuffer      Float    @default(0.05)
   notificationType String   @default("ONCE")
   lastNotifiedAt   DateTime?
+  note             String?  // User custom note for the alert
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

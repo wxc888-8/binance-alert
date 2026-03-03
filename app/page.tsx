@@ -15,6 +15,7 @@ interface Alert {
   status: 'ACTIVE' | 'TRIGGERED';
   alertBuffer: number;
   notificationType: 'ONCE' | 'CONTINUOUS';
+  note?: string;
 }
 
 interface User {
@@ -40,6 +41,7 @@ export default function Home() {
   // Settings
   const [alertBuffer, setAlertBuffer] = useState('0.05');
   const [notificationType, setNotificationType] = useState<'ONCE' | 'CONTINUOUS'>('ONCE');
+  const [note, setNote] = useState('');
   
   // Contacts
   const [telegramId, setTelegramId] = useState('');
@@ -128,8 +130,10 @@ export default function Home() {
         telegramToken,
         barkKey,
         notificationEmail,
+        note,
       });
       fetchAlerts();
+      setNote('');
       if (type === 'NORMAL') setTargetPrice('');
       if (type === 'TP_SL') {
         setTpPrice('');
@@ -334,7 +338,8 @@ export default function Home() {
                       <th className="p-5 font-bold">类型</th>
                       <th className="p-5 font-bold">条件</th>
                       <th className="p-5 font-bold">目标价</th>
-                      <th className="p-5 font-bold">配置</th>
+                        <th className="p-5 font-bold hidden md:table-cell">备注</th>
+                        <th className="p-5 font-bold">配置</th>
                       <th className="p-5 font-bold">状态</th>
                       <th className="p-5 font-bold text-right pr-8">操作</th>
                     </tr>
@@ -372,7 +377,16 @@ export default function Home() {
                             }
                           </td>
                           <td className="p-5 font-mono text-base font-bold text-slate-700">${alert.targetPrice}</td>
-                          <td className="p-5 text-xs text-slate-500">
+                          <td className="p-5 hidden md:table-cell">
+                            {alert.note ? (
+                              <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded max-w-[150px] truncate block" title={alert.note}>
+                                {alert.note}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-300">-</span>
+                            )}
+                          </td>
+                        <td className="p-5 text-xs text-slate-500">
                             <div className="flex items-center gap-1.5 font-medium"><Activity className="w-3 h-3 text-[#FFB84D]" /> 缓冲: {alert.alertBuffer}%</div>
                             <div className="flex items-center gap-1.5 mt-1.5">
                                 {alert.notificationType === 'ONCE' ? <StopCircle className="w-3 h-3 text-slate-400" /> : <PlayCircle className="w-3 h-3 text-[#38D9A9]" />}
@@ -500,18 +514,30 @@ export default function Home() {
               <div className="p-6 pt-6">
                 {activeTab === 'normal' ? (
                   <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">目标价格</label>
-                      <div className="relative group">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
-                        <input
-                          type="number"
-                          value={targetPrice}
-                          onChange={(e) => setTargetPrice(e.target.value)}
-                          className="w-full bg-[#F5F7FA] border-none rounded-xl p-4 pl-8 text-slate-800 font-mono font-bold focus:ring-2 focus:ring-[#4A90E2]/20 focus:bg-white outline-none transition-all"
-                          placeholder="0.00"
-                        />
-                      </div>
+                    <div className="flex gap-4">
+                        <div className="flex-1">
+                            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">目标价格</label>
+                            <div className="relative group">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+                                <input
+                                type="number"
+                                value={targetPrice}
+                                onChange={(e) => setTargetPrice(e.target.value)}
+                                className="w-full bg-[#F5F7FA] border-none rounded-xl p-4 pl-8 text-slate-800 font-mono font-bold focus:ring-2 focus:ring-[#4A90E2]/20 focus:bg-white outline-none transition-all"
+                                placeholder="0.00"
+                                />
+                            </div>
+                        </div>
+                        <div className="w-1/3">
+                            <label className="block text-sm font-bold text-slate-400 mb-2 ml-1">备注 (可选)</label>
+                            <input
+                                type="text"
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                                className="w-full bg-[#F5F7FA] border-none rounded-xl p-4 text-slate-800 text-sm font-medium focus:ring-2 focus:ring-[#4A90E2]/20 focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                                placeholder="策略说明"
+                            />
+                        </div>
                     </div>
                     <button
                       onClick={() => handleCreateAlert('NORMAL')}
@@ -524,47 +550,63 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    <div>
-                      <label className="block text-sm font-bold text-[#38D9A9] mb-2 flex items-center gap-1 ml-1">
-                        <ArrowUp className="w-4 h-4" /> 止盈价格 (TP)
-                      </label>
-                      <div className="relative group">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#38D9A9]/50 font-medium">$</span>
-                        <input
-                          type="number"
-                          value={tpPrice}
-                          onChange={(e) => setTpPrice(e.target.value)}
-                          className="w-full bg-[#38D9A9]/5 border border-transparent hover:border-[#38D9A9]/30 rounded-xl p-4 pl-8 text-slate-800 font-mono font-bold focus:border-[#38D9A9] focus:bg-white outline-none transition-all"
-                          placeholder="高于当前价"
-                        />
-                        {tpPrice && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#38D9A9] bg-white px-2 py-1 rounded shadow-sm font-mono border border-[#38D9A9]/20">
-                                触发: {(parseFloat(tpPrice) * (1 - parseFloat(alertBuffer)/100)).toFixed(2)}
+                        {/* 止盈止损输入 */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-[#38D9A9] mb-2 flex items-center gap-1 ml-1">
+                                    <ArrowUp className="w-4 h-4" /> 止盈 (TP)
+                                </label>
+                                <div className="relative group">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#38D9A9]/50 font-medium">$</span>
+                                    <input
+                                    type="number"
+                                    value={tpPrice}
+                                    onChange={(e) => setTpPrice(e.target.value)}
+                                    className="w-full bg-[#38D9A9]/5 border border-transparent hover:border-[#38D9A9]/30 rounded-xl p-4 pl-8 text-slate-800 font-mono font-bold focus:border-[#38D9A9] focus:bg-white outline-none transition-all"
+                                    placeholder="高于当前"
+                                    />
+                                    {tpPrice && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#38D9A9] bg-white px-2 py-1 rounded shadow-sm font-mono border border-[#38D9A9]/20">
+                                            触发: {(parseFloat(tpPrice) * (1 - parseFloat(alertBuffer)/100)).toFixed(2)}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-[#FF5252] mb-2 flex items-center gap-1 ml-1">
-                        <ArrowDown className="w-4 h-4" /> 止损价格 (SL)
-                      </label>
-                      <div className="relative group">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FF5252]/50 font-medium">$</span>
-                        <input
-                          type="number"
-                          value={slPrice}
-                          onChange={(e) => setSlPrice(e.target.value)}
-                          className="w-full bg-[#FF5252]/5 border border-transparent hover:border-[#FF5252]/30 rounded-xl p-4 pl-8 text-slate-800 font-mono font-bold focus:border-[#FF5252] focus:bg-white outline-none transition-all"
-                          placeholder="低于当前价"
-                        />
-                        {slPrice && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#FF5252] bg-white px-2 py-1 rounded shadow-sm font-mono border border-[#FF5252]/20">
-                                触发: {(parseFloat(slPrice) * (1 + parseFloat(alertBuffer)/100)).toFixed(2)}
+                            <div>
+                                <label className="block text-sm font-bold text-[#FF5252] mb-2 flex items-center gap-1 ml-1">
+                                    <ArrowDown className="w-4 h-4" /> 止损 (SL)
+                                </label>
+                                <div className="relative group">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FF5252]/50 font-medium">$</span>
+                                    <input
+                                    type="number"
+                                    value={slPrice}
+                                    onChange={(e) => setSlPrice(e.target.value)}
+                                    className="w-full bg-[#FF5252]/5 border border-transparent hover:border-[#FF5252]/30 rounded-xl p-4 pl-8 text-slate-800 font-mono font-bold focus:border-[#FF5252] focus:bg-white outline-none transition-all"
+                                    placeholder="低于当前"
+                                    />
+                                    {slPrice && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#FF5252] bg-white px-2 py-1 rounded shadow-sm font-mono border border-[#FF5252]/20">
+                                            触发: {(parseFloat(slPrice) * (1 + parseFloat(alertBuffer)/100)).toFixed(2)}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        )}
-                      </div>
-                    </div>
-                    <button
+                        </div>
+
+                        {/* 备注输入 */}
+                        <div>
+                            <label className="block text-sm font-bold text-slate-400 mb-2 ml-1">策略备注 (可选)</label>
+                            <input
+                                type="text"
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                                className="w-full bg-[#F5F7FA] border-none rounded-xl p-4 text-slate-800 text-sm font-medium focus:ring-2 focus:ring-[#FFB84D]/20 focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                                placeholder="例如：突破前高做多，止损放在前低"
+                            />
+                        </div>
+
+                        <button
                       onClick={() => handleCreateAlert('TP_SL')}
                       disabled={loading || (!tpPrice && !slPrice)}
                       className="w-full bg-[#FFB84D] hover:bg-[#F5A623] text-white font-bold p-4 rounded-xl shadow-lg shadow-[#FFB84D]/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
