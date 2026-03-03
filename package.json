@@ -1,0 +1,53 @@
+{
+  "name": "binance-alert-system",
+  "version": "1.0.0",
+  "description": "Binance Alert System with TradingView Charts",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "worker": "ts-node worker.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.4.1",
+    "axios": "^1.7.9",
+    "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
+    "cookie": "^1.1.1",
+    "framer-motion": "^12.4.7",
+    "js-cookie": "^3.0.5",
+    "jsonwebtoken": "^9.0.3",
+    "lightweight-charts": "^5.0.3",
+    "lucide-react": "^0.476.0",
+    "next": "^15.2.0",
+    "node-telegram-bot-api": "^0.66.0",
+    "nodemailer": "^6.10.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.2",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie": "^0.6.0",
+    "@types/js-cookie": "^3.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.13.5",
+    "@types/node-telegram-bot-api": "^0.64.7",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@types/ws": "^8.5.14",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "prisma": "^6.4.1",
+    "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

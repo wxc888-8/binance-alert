@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  // provider = "mysql" // Uncomment for MySQL
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique // Login Email
+  password          String
+  
+  // Notification Settings
+  notificationEmail String?  // Optional override for notifications
+  telegramId        String?
+  telegramToken     String?  // User's own bot token
+  barkKey           String?
+  
+  // Access Control
+  role              String   @default("USER") // "USER", "ADMIN"
+  isActive          Boolean  @default(true)   // Account status (enabled/disabled)
+  isMember          Boolean  @default(false)  // Membership status
+  
+  // Email Verification
+  isVerified        Boolean  @default(false)
+  verificationCode  String?  // OTP
+  verificationExpiry DateTime?
+
+  createdAt         DateTime @default(now())
+  alerts            Alert[]
+}
+
+model Alert {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  symbol           String   // e.g., BTCUSDT
+  targetPrice      Float
+  condition        String   // "ABOVE" or "BELOW"
+  type             String   // "NORMAL", "TP", "SL"
+  status           String   // "ACTIVE", "TRIGGERED", "CANCELLED"
+  message          String?
+  
+  // Settings
+  alertBuffer      Float    @default(0.05)
+  notificationType String   @default("ONCE")
+  lastNotifiedAt   DateTime?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
