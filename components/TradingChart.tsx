@@ -138,7 +138,8 @@ export const TradingChart: React.FC<TradingChartProps> = ({ symbol, alerts }) =>
 
       try {
         // 1. 获取历史K线数据 (Binance Futures API)
-        const response = await axios.get(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=500`);
+        // 使用 Next.js API 代理请求，解决前端跨域问题 (CORS)
+        const response = await axios.get(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`);
         
         if (!isMounted) return; // Prevent setting state if unmounted
 
@@ -168,7 +169,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ symbol, alerts }) =>
 
       // 2. 连接 WebSocket 更新实时数据
       const wsSymbol = symbol.toLowerCase();
-      ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_${interval}`);
+      ws = new WebSocket(`wss://stream.binance.com:9443/ws/${wsSymbol}@kline_${interval}`);
       wsRef.current = ws;
 
       ws.onmessage = (event) => {
